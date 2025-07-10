@@ -1,0 +1,83 @@
+clc
+clear
+close all
+
+scene_id = 39;
+plotting = 1;
+environment = createScene(scene_id, false); 
+rrt = RRT(environment);
+
+goal_reached = rrt.solve(plotting);
+
+
+path_indices = rrt.reconstructPath(); 
+positions = vertcat(rrt.nodes(path_indices).position);  
+disp(positions);                                            
+
+maps = {positions};
+
+
+figure
+environment = createScene(scene_id, false); 
+rrt = RRT(environment);
+hold on
+simulatePathFollowing(maps{1});
+
+
+%%
+clc;
+clear;
+close all;
+
+scene_id = 39;                           % Map ID
+plotting = 1;
+save_path = 'C:\Users\97895\Desktop\AGV_RRT_maps';
+
+if ~exist(save_path, 'dir')
+    mkdir(save_path);                   % Create folder if it doesn't exist
+end
+
+% ===== Path Planning Visualization =====
+environment = createScene(scene_id, false); 
+rrt = RRT(environment);
+
+goal_reached = rrt.solve(plotting);
+
+if goal_reached
+    path_indices = rrt.reconstructPath(); 
+    positions = vertcat(rrt.nodes(path_indices).position);  
+    disp(positions);
+    maps = {positions};
+
+    % Save Path Planning Figure
+    fig1 = figure;
+    environment = createScene(scene_id, false); 
+    environment.plot;
+    hold on;
+    plot(positions(:,1), positions(:,2), 'r-', 'LineWidth', 2);
+    scatter(positions(1,1), positions(1,2), 100, 'go', 'filled');  % Start
+    scatter(positions(end,1), positions(end,2), 100, 'ro', 'filled'); % Goal
+    title(['AGV RRT Path Planning (Scene ', num2str(scene_id), ')']);
+    axis equal;
+
+    filename1 = fullfile(save_path, ['AGV_RRT_PathPlanning', num2str(scene_id), '.png']);
+    saveas(fig1, filename1);
+    close(fig1); % Optional: close figure after saving
+
+    % ===== Differential Drive Simulation =====
+    fig2 = figure;
+    environment = createScene(scene_id, false); 
+    environment.plot;
+    hold on;
+    simulatePathFollowing(maps{1});
+    title(['AGV RRT Differential Drive (Scene ', num2str(scene_id), ')']);
+    axis equal;
+
+    filename2 = fullfile(save_path, ['AGV_RRT_DifferentialDrive', num2str(scene_id), '.png']);
+    saveas(fig2, filename2);
+    close(fig2); % Optional
+else
+    warning('RRT failed to find a path in Scene %d.', scene_id);
+end
+
+

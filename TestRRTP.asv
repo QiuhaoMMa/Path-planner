@@ -1,0 +1,47 @@
+close all;
+clear all;
+
+data = cell(1, 15);
+
+for m = 4
+    num = m;
+    for i = 1:10
+        fprintf('%i-%i\n',m,i);
+   
+        createEnvironment();
+
+        rrt = RRT(environment);
+        tic;
+        goalReached = rrt.solve(0);
+        t = toc;
+        
+        if goalReached
+            L = rrt.getPathLenght();
+            
+            if isempty(data{m})
+                data{m} = [L, t,rrt.iter_solution ]; 
+            else
+                data{m} = [data{m}; L, t];
+            end
+        end
+    end
+end
+
+disp(data);
+
+%%
+cell2mat(cellfun(@(x) mean(x,1),data','UniformOutput',false))
+
+
+
+% figure
+% rrt.pdf.plot_matrix();
+
+
+
+
+
+
+
+
+
